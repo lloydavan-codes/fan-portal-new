@@ -22,12 +22,18 @@
   --font-body:    "Archivo", "Segoe UI", Tahoma, Arial, sans-serif;
 
   --wrap: 1100px;
+
+  color-scheme: light;
 }
 
 /* ---------- 2. Reset & globals (consistent across ALL pages) ---------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;   /* stop iOS landscape text inflation */
+  text-size-adjust: 100%;
+}
 
 body {
   font-family: var(--font-body);
@@ -35,6 +41,9 @@ body {
   color: var(--ink);
   font-size: 16px;
   line-height: 1.65;
+  overflow-x: hidden;               /* offset shadows must never cause sideways scroll */
+  overflow-x: clip;
+  -webkit-tap-highlight-color: transparent;
 }
 
 ::selection { background: var(--gold); color: var(--green-deep); }
@@ -351,6 +360,15 @@ table.venues {
 }
 .venues tr.totals td[colspan] { color: var(--gold); }
 .table-note { margin-top: 1.2rem; font-size: .88rem; color: var(--muted); }
+.swipe-hint {
+  display: none;                     /* only shown on swipe-sized screens */
+  margin: 1.4rem 0 0;
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--green-mid);
+}
 
 /* ---------- 11. Fixtures board (fixtures.html) ---------- */
 .fixture-list { display: grid; gap: 1.1rem; margin-top: 1.8rem; }
@@ -446,11 +464,94 @@ dl.ministry a:hover { color: var(--gold-deep, #c99a2e); }
 /* ---------- 14. Responsive ---------- */
 @media (max-width: 820px) {
   .contact-grid { grid-template-columns: 1fr; }
-  .header-inner { flex-direction: column; align-items: flex-start; }
+
+  /* Header: brand on top, nav as a horizontal swipe strip (no JS needed) */
+  .header-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .4rem;
+    padding: .9rem 1rem;
+    padding-top: calc(.9rem + env(safe-area-inset-top, 0px));
+  }
+  .main-nav ul {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: .2rem;
+  }
+  .main-nav ul::-webkit-scrollbar { display: none; }
+  .main-nav a {
+    white-space: nowrap;
+    padding: .7rem .85rem;          /* ~44px tap target */
+    font-size: .8rem;
+  }
+
   .hero-inner { padding: 3.2rem 1.25rem 3rem; }
+
+  .swipe-hint { display: block; }
 }
 @media (max-width: 640px) {
   .perks { columns: 1; }
-  .notice { padding: 1.4rem 1.2rem; border-left-width: 10px; }
+  .notice { padding: 1.4rem 1.2rem; border-left-width: 10px; box-shadow: 6px 6px 0 rgba(10, 74, 42, .16); }
+  .section-kicker { gap: .7rem; margin-bottom: 1.2rem; }
   .section-kicker .num { font-size: 1.8rem; }
+
+  /* Tighter rhythm on small screens */
+  .section { padding: 2.4rem 1.15rem; }
+  .hero-inner { padding: 2.6rem 1.15rem 2.4rem; }
+  .page-hero .wrap { padding: 2.2rem 1.15rem 2.1rem; }
+  .lede { font-size: 1rem; }
+
+  /* Steeper gradient: gold reads as a base wedge instead of a side stripe */
+  .hero {
+    background: linear-gradient(160deg,
+      var(--green-deep) 0 60%,
+      var(--green-mid) 60% 82%,
+      var(--gold)      82% 100%);
+  }
+  .page-hero {
+    background: linear-gradient(160deg,
+      var(--green-deep) 0 66%,
+      var(--green-mid) 66% 85%,
+      var(--gold)      85% 100%);
+  }
+
+  /* Slimmer offset shadows so nothing clips on narrow screens */
+  .steps li { padding: .95rem .95rem .95rem 3.9rem; box-shadow: 4px 4px 0 var(--gold); }
+  .steps li::before { width: 3rem; font-size: 1.1rem; }
+  .fixture { padding: .95rem; box-shadow: 4px 4px 0 var(--sky); }
+  .table-wrap { border-width: 2px; box-shadow: 6px 6px 0 var(--gold); }
+  .venues th, .venues td { padding: .55rem .7rem; font-size: .93rem; }
+  .venues caption { padding: .85rem 1rem; font-size: .9rem; }
+
+  .target-link { padding: .9rem 1.15rem; }
+
+  .map-frame iframe { height: 320px; border-width: 4px; }
+  .frame-demo iframe { height: 420px; }
+
+  .footer-grid { padding: 2rem 1.15rem 1.6rem; gap: 1.6rem; }
+  .copyright { padding: 1rem 1rem calc(1.2rem + env(safe-area-inset-bottom, 0px)); }
+}
+@media (max-width: 380px) {
+  .brand-mark { width: 44px; height: 44px; font-size: .95rem; }
+  .brand-text { font-size: .92rem; }
+  h1 { font-size: 2.05rem; }
+}
+
+/* Touch devices: neutralise sticky :hover states */
+@media (hover: none) {
+  .main-nav a:hover,
+  .footer-nav a:hover {
+    color: var(--paper);
+    background-color: transparent;
+    border-bottom-color: transparent;
+  }
+  .main-nav a[aria-current="page"]:hover {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+  .target-link:hover { color: var(--green-deep); background: var(--gold); }
+  .venues tbody tr:hover { background: transparent; }
+  .venues tbody tr:nth-child(even):hover { background: #edf3e9; }
 }
